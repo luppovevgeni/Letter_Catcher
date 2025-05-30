@@ -1,0 +1,7 @@
+name: bukvolov
+entrypoint: src/main.sc
+language: ru
+backend: v2 
+nlu:
+  caila:
+    noMatchThreshold: 0.2
