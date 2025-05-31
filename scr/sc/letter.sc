@@ -1,7 +1,7 @@
-theme: /bukvolov
+theme: /
 
     state: Letter
-        q!: буква $Letter::letter          # захватываем слово (длина 1-2 символа)
+        q!: буква $Letter::letter
 
         script:
             var l = $parseTree._word.trim().toUpperCase();
