@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>БУКВОЛОВ</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+                   Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      background: linear-gradient(to bottom, #fafafa, #f2f2f2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      justify-content: flex-start;
+    }
+
+    h1 {
+      margin: 20px 0 10px 0;
+      font-size: 1.5rem;
+      color: #333;
+    }
+
+    .board {
+      display: grid;
+      grid-template-rows: repeat(6, 50px);
+      grid-gap: 8px;
+      margin-bottom: 20px;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: repeat(5, 50px);
+      grid-gap: 8px;
+    }
+
+    .cell {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: #fff;
+      text-transform: uppercase;
+      text-align: center;
+      font-size: 18px;
+      line-height: 50px;
+      cursor: default;
+      user-select: none;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .cell:not(:empty) {
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .correct {
+      background-color: #a7f3d0;
+    }
+    .present {
+      background-color: #fde68a;
+    }
+    .absent {
+      background-color: #e5e7eb;
+    }
+
+    .cell.reveal {
+      animation: reveal 0.3s forwards;
+    }
+    @keyframes reveal {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .keyboard {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .keyboard-row {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .key {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      text-align: center;
+      font-size: 16px;
+      line-height: 40px;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .key:hover {
+      background-color: #f2f2f2;
+      transform: translateY(-2px);
+    }
+
+    .key.correct {
+      background-color: #a7f3d0;
+    }
+
+    .key.present {
+      background-color: #fde68a;
+    }
+
+    .key.absent {
+      background-color: #e5e7eb;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none; 
+      justify-content: center; 
+      align-items: center;
+      z-index: 999;
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 300px;
+      text-align: center;
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal p {
+      margin: 0 0 20px 0;
+      color: #444;
+      font-size: 16px;
+    }
+
+    .close-btn {
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .close-btn:hover {
+      background-color: #f2f2f2;
+      transform: translateY(-2px);
+    }
+
+  </style>
+</head>
+<body>
+  <h1>БУКВОЛОВ</h1>
+  <div class="board" id="board">
+    <div class="row">
+      <div class="cell" data-row="0" data-col="0"></div>
+      <div class="cell" data-row="0" data-col="1"></div>
+      <div class="cell" data-row="0" data-col="2"></div>
+      <div class="cell" data-row="0" data-col="3"></div>
+      <div class="cell" data-row="0" data-col="4"></div>
+    </div>
+    <div class="row">
+      <div class="cell" data-row="1" data-col="0"></div>
+      <div class="cell" data-row="1" data-col="1"></div>
+      <div class="cell" data-row="1" data-col="2"></div>
+      <div class="cell" data-row="1" data-col="3"></div>
+      <div class="cell" data-row="1" data-col="4"></div>
+    </div>
+    <div class="row">
+      <div class="cell" data-row="2" data-col="0"></div>
+      <div class="cell" data-row="2" data-col="1"></div>
+      <div class="cell" data-row="2" data-col="2"></div>
+      <div class="cell" data-row="2" data-col="3"></div>
+      <div class="cell" data-row="2" data-col="4"></div>
+    </div>
+    <div class="row">
+      <div class="cell" data-row="3" data-col="0"></div>
+      <div class="cell" data-row="3" data-col="1"></div>
+      <div class="cell" data-row="3" data-col="2"></div>
+      <div class="cell" data-row="3" data-col="3"></div>
+      <div class="cell" data-row="3" data-col="4"></div>
+    </div>
+    <div class="row">
+      <div class="cell" data-row="4" data-col="0"></div>
+      <div class="cell" data-row="4" data-col="1"></div>
+      <div class="cell" data-row="4" data-col="2"></div>
+      <div class="cell" data-row="4" data-col="3"></div>
+      <div class="cell" data-row="4" data-col="4"></div>
+    </div>
+    <div class="row">
+      <div class="cell" data-row="5" data-col="0"></div>
+      <div class="cell" data-row="5" data-col="1"></div>
+      <div class="cell" data-row="5" data-col="2"></div>
+      <div class="cell" data-row="5" data-col="3"></div>
+      <div class="cell" data-row="5" data-col="4"></div>
+    </div>
+  </div>
+
+  <div class="keyboard" id="keyboard"></div>
+
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <p id="modal-message"></p>
+      <button class="close-btn" id="close-btn">Закрыть</button>
+    </div>
+  </div>
+
+  <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@sberdevices/assistant-client@4/umd/assistant.development.min.js">
+  </script>
+  <script>
+    // определяемся, где запущены: localhost → debugger, устройство → обычный ассистент
+    const isLocal = 
+    location.hostname === 'localhost' ||
+    location.hostname === '127.0.0.1' ||              // запуск через IP
+    location.hostname === '' ||                       // файл `index.html` из ФС
+    location.protocol === 'file:';                    // браузер открыл файл;
+  
+    const assistant = isLocal
+      ? window.assistant.createSmartappDebugger({
+          token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJqdGkiOiI5MTFmMTNmNi01YWIxLTRkMzItODVmYS0wYzk1M2QxMzQwMGMiLCJzdWIiOiJlYTE5NDFkNWFiZTRiODcyYzIzZDhiYjg1NWM1ODlhNmRlNDAyNGEzYjM5NmE5MjIyYjUyOTdlZjI2MjZmNTdiNTM5YmU5MjcwMDQyNjI5OCIsImlzcyI6IktFWU1BU1RFUiIsImV4cCI6MTc0ODcxODEzOSwiYXVkIjoiVlBTIiwidXNyIjoiMjJhMTFjZDEtMmQ4Ni00NzYzLTg5MGYtZTE1OWI3MGJlZDhmIiwiaWF0IjoxNzQ4NjMxNzI5LCJzaWQiOiJhMTAyODdjMy0yZTFmLTQ0NmQtODU1ZS1iZTBhOTc5ZjVhOGQifQ.ebk9_xJJt08Rh527kx5R--pW4LnC-RyO2c1ygvdbO8xofWNScuOAwAitvoNfUt5jrTi_wtvsgdZSJOe43PeQb6UJrmLYirS3zxOsrQE1nf7LZF-Z94aUV6Tm_qpsgug5e23manmNdqRkuSMTk5yUOsjo2gz4AIvcnj0BupvR--b3LgGCszyy-_pqvoayA4q8Y7i_mbL3aQxeqC_iSY_5t2_qZFJks9mAJNjU1qyCbX38Sl7pMMcTY7Rv6No1ix3FxKLANktQPxJEvbKEnr1c9XbBIb4sG-XPrnNemY8myNakJK_jFz5fzCjonoI32jNgqOXHzB2amKDmY2XgymaTzZAjy0LsPsqzYu36Kq3K8Wbbh3hzZSqYZ_O9jOo_2dPjjdAcBTjrD21FW5zI0Npax9Nd-_v-KvPJkJpM4X5yX4GAozSueQVKE8vhNtntRR-5q7rZoRTr_1yrsZ2Qa9hvevx8LTunrBJhPDRjvwD99wDw3hcWHWM0_in8dFHqw8w1TstRu-JLzYdGZ1m2I7c10QJVWVjCp7oU6d6IqRJFZIDoq2US2FS9G8pCuNy8vdHAGbZNBOAiKcsAMH5FOcxaIBOO95BfNwLnepQFsSqawSJXFy5dtCWfTRk9JyAgjEX8F5_UGn14KKrXjrl-4cw9S3jt7uVbu9LU6K9vWpsmrjs',
+          initPhrase: 'запусти букволов',
+          getState: () => ({})
+        })
+      : window.assistant.createAssistant({ getState: () => ({}) });
+  
+    assistant.on('data', (message) => {
+    console.log('[assistant → front]', message);
+    if (message.type !== 'smart_app_data') return;
+
+    const { action, letter, word } = message.payload || {};
+    /* твоя текущая обработка */
+    if (action === 'insert_letter' && letter) handleKeyClick(letter);
+    if (action === 'insert_word'   && word)   [...word].forEach(handleKeyClick);
+  });
+
+  // 2️⃣ если нужно посмотреть, что ты отправляешь в бэкенд:
+  function sendToBackend(action, payload = {}) {
+      console.log('[front → backend]', action, payload);
+      assistant.sendData({ action, ...payload });
+  }
+  </script>
+  <script>
+    const WORDS = [
+      "ВРЕМЯ", "ЖИЗНЬ", "СЛОВО", "МЕСТО", "КОНЕЦ", "ЧАСТЬ", "ГОРОД", "ЗЕМЛЯ",
+      "ПРАВО", "ДВЕРЬ", "ЗАКОН", "ГОЛОС", "КНИГА", "ЧИСЛО", "НАРОД", "ФОРМА",
+      "СВЯЗЬ", "УЛИЦА", "ВЕЧЕР", "МЫСЛЬ", "МЕСЯЦ", "РУБЛЬ", "СМЫСЛ", "ОРГАН",
+      "РЫНОК", "СЕМЬЯ", "ТОВАР", "АКТЕР", "СЛЕЗА", "ВЫВОД", "НОРМА", "РЕЖИМ",
+      "НАЛОГ", "ПОИСК", "АКЦИЯ", "СОСЕД", "ФРАЗА", "ТОЛПА", "КУХНЯ"
+    ];
+
+    function chooseNewWord() {
+      return WORDS[Math.floor(Math.random() * WORDS.length)];
+    }
+
+    let correctWord = chooseNewWord();
+
+    const keyboardLayout = [
+      ["Й","Ц","У","К","Е","Н","Г","Ш","Щ","З","Х","Ъ"],
+      ["Ф","Ы","В","А","П","Р","О","Л","Д","Ж","Э"],
+      ["Я","Ч","С","М","И","Т","Ь","Б","Ю","⌫"]
+    ];
+
+    let currentRow = 0;
+    let currentCol = 0;
+    let isGameOver = false;
+
+    const letterStatuses = {};
+
+    const overlayEl = document.getElementById("overlay");
+    const modalMessageEl = document.getElementById("modal-message");
+    const closeBtnEl = document.getElementById("close-btn");
+
+    const keyboardEl = document.getElementById("keyboard");
+    keyboardLayout.forEach(row => {
+      const rowEl = document.createElement("div");
+      rowEl.classList.add("keyboard-row");
+      row.forEach(letter => {
+        const keyBtn = document.createElement("div");
+        keyBtn.classList.add("key");
+        keyBtn.textContent = letter;
+
+        if (letter === "⌫") {
+          keyBtn.addEventListener("click", handleBackspace);
+        } else {
+          keyBtn.addEventListener("click", () => handleKeyClick(letter));
+        }
+
+        rowEl.appendChild(keyBtn);
+      });
+      keyboardEl.appendChild(rowEl);
+    });
+
+    closeBtnEl.addEventListener("click", () => {
+      hideModal();
+      correctWord = chooseNewWord();
+      resetGame();
+    });
+
+    function showModal(message) {
+      modalMessageEl.textContent = message;
+      overlayEl.classList.add("show");
+    }
+
+    function hideModal() {
+      overlayEl.classList.remove("show");
+    }
+
+    function resetGame() {
+      currentRow = 0;
+      currentCol = 0;
+      isGameOver = false;
+
+      const cells = document.querySelectorAll(".cell");
+      cells.forEach(cell => {
+        cell.textContent = "";
+        cell.classList.remove("correct", "present", "absent", "reveal");
+      });
+
+      for (const letter in letterStatuses) {
+        delete letterStatuses[letter];
+      }
+
+      const allKeys = document.querySelectorAll(".key");
+      allKeys.forEach(k => {
+        k.classList.remove("correct", "present", "absent");
+      });
+    }
+
+    function handleKeyClick(letter) {
+      console.log('[Клик по клавише]', letter);
+      if (isGameOver) return;
+      if (currentCol < 5) {
+        const cell = document.querySelector(`[data-row='${currentRow}'][data-col='${currentCol}']`);
+        cell.textContent = letter;
+        currentCol++;
+      }
+      if (currentCol === 5) {
+        checkGuess();
+      }
+    }
+
+    function handleBackspace() {
+      if (isGameOver) return;
+      if (currentCol > 0) {
+        currentCol--;
+        const cell = document.querySelector(`[data-row='${currentRow}'][data-col='${currentCol}']`);
+        cell.textContent = "";
+      }
+    }
+
+    function checkGuess() {
+      let guess = "";
+      for (let col = 0; col < 5; col++) {
+        const cell = document.querySelector(`[data-row='${currentRow}'][data-col='${col}']`);
+        guess += cell.textContent;
+      }
+
+      const resultColors = getColorsForGuess(guess, correctWord);
+      for (let col = 0; col < 5; col++) {
+        const cell = document.querySelector(`[data-row='${currentRow}'][data-col='${col}']`);
+        cell.classList.remove("absent", "present", "correct", "reveal");
+        cell.classList.add(resultColors[col]);
+        cell.classList.add("reveal");
+      }
+
+      for (let i = 0; i < 5; i++) {
+        const letter = guess[i];
+        const color = resultColors[i];
+        updateLetterStatus(letter, color);
+      }
+      applyKeyboardStatuses();
+
+      if (guess === correctWord) {
+        showModal("Поздравляем! Вы угадали слово «" + guess + "»!");
+        isGameOver = true;
+        return;
+      }
+
+      if (currentRow === 5) {
+        showModal("Попытки закончились! Правильное слово: " + correctWord);
+        isGameOver = true;
+        return;
+      }
+
+      currentRow++;
+      currentCol = 0;
+    }
+
+    function colorRank(c) {
+      if (c === "absent") return 0;
+      if (c === "present") return 1;
+      if (c === "correct") return 2;
+      return -1; 
+    }
+
+    function updateLetterStatus(letter, newColor) {
+      const oldColor = letterStatuses[letter];
+      if (!oldColor || colorRank(newColor) > colorRank(oldColor)) {
+        letterStatuses[letter] = newColor;
+      }
+    }
+
+    function applyKeyboardStatuses() {
+      const allKeys = document.querySelectorAll(".key");
+      allKeys.forEach(k => {
+        const letter = k.textContent;
+        if (letter === "⌫") return;
+
+        const status = letterStatuses[letter];
+        k.classList.remove("absent", "present", "correct");
+        if (status) {
+          k.classList.add(status);
+        }
+      });
+    }
+
+    function getColorsForGuess(guess, solution) {
+      const colors = ["absent","absent","absent","absent","absent"];
+      let solutionArr = solution.split("");
+
+      for (let i = 0; i < 5; i++) {
+        if (guess[i] === solutionArr[i]) {
+          colors[i] = "correct";
+          solutionArr[i] = null;
+        }
+      }
+
+      for (let i = 0; i < 5; i++) {
+        if (colors[i] === "correct") continue;
+        const letter = guess[i];
+        const indexInSolution = solutionArr.indexOf(letter);
+        if (indexInSolution !== -1) {
+          colors[i] = "present";
+          solutionArr[indexInSolution] = null;
+        }
+      }
+      return colors;
+    }
+  </script>
+</body>
+</html>
