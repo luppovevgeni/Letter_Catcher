@@ -1,4 +1,4 @@
-theme: /bukvolov
+theme: /
 
     state: Word
         q!: слово $Word::word
