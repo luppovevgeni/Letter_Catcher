@@ -1,4 +1,4 @@
-theme: /bukvolov
+theme: /
 
 require: js/actions.js
 
