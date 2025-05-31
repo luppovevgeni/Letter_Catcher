@@ -1,0 +1,10 @@
+<test>
+  <dialog>
+    <message role="user">буква а</message>
+    <message role="assistant">Вставляю букву А</message>
+  </dialog>
+  <dialog>
+    <message role="user">слово тесто</message>
+    <message role="assistant">Пробуем слово ТЕСТО</message>
+  </dialog>
+</test>

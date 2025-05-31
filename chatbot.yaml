@@ -1,7 +1,13 @@
 name: bukvolov
-entrypoint: src/main.sc
+botEngine: v2
 language: ru
-backend: v2 
-nlu:
-  caila:
-    noMatchThreshold: 0.2
+
+entryPoint:
+  - entryPoint.sc
+
+caila:
+  noMatchThreshold: 0.2
+
+tests:
+  include:
+    - test/test.xml

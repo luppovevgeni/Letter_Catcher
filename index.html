@@ -227,36 +227,23 @@
   <script src="https://unpkg.com/@sberdevices/assistant-client@4/umd/assistant.development.min.js">
   </script>
   <script>
-    // определяемся, где запущены: localhost → debugger, устройство → обычный ассистент
-    const isLocal = 
-    location.hostname === 'localhost' ||
-    location.hostname === '127.0.0.1' ||              // запуск через IP
-    location.hostname === '' ||                       // файл `index.html` из ФС
-    location.protocol === 'file:';                    // браузер открыл файл;
-  
-    const assistant = isLocal
-      ? window.assistant.createSmartappDebugger({
-          token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJqdGkiOiI5MTFmMTNmNi01YWIxLTRkMzItODVmYS0wYzk1M2QxMzQwMGMiLCJzdWIiOiJlYTE5NDFkNWFiZTRiODcyYzIzZDhiYjg1NWM1ODlhNmRlNDAyNGEzYjM5NmE5MjIyYjUyOTdlZjI2MjZmNTdiNTM5YmU5MjcwMDQyNjI5OCIsImlzcyI6IktFWU1BU1RFUiIsImV4cCI6MTc0ODcxODEzOSwiYXVkIjoiVlBTIiwidXNyIjoiMjJhMTFjZDEtMmQ4Ni00NzYzLTg5MGYtZTE1OWI3MGJlZDhmIiwiaWF0IjoxNzQ4NjMxNzI5LCJzaWQiOiJhMTAyODdjMy0yZTFmLTQ0NmQtODU1ZS1iZTBhOTc5ZjVhOGQifQ.ebk9_xJJt08Rh527kx5R--pW4LnC-RyO2c1ygvdbO8xofWNScuOAwAitvoNfUt5jrTi_wtvsgdZSJOe43PeQb6UJrmLYirS3zxOsrQE1nf7LZF-Z94aUV6Tm_qpsgug5e23manmNdqRkuSMTk5yUOsjo2gz4AIvcnj0BupvR--b3LgGCszyy-_pqvoayA4q8Y7i_mbL3aQxeqC_iSY_5t2_qZFJks9mAJNjU1qyCbX38Sl7pMMcTY7Rv6No1ix3FxKLANktQPxJEvbKEnr1c9XbBIb4sG-XPrnNemY8myNakJK_jFz5fzCjonoI32jNgqOXHzB2amKDmY2XgymaTzZAjy0LsPsqzYu36Kq3K8Wbbh3hzZSqYZ_O9jOo_2dPjjdAcBTjrD21FW5zI0Npax9Nd-_v-KvPJkJpM4X5yX4GAozSueQVKE8vhNtntRR-5q7rZoRTr_1yrsZ2Qa9hvevx8LTunrBJhPDRjvwD99wDw3hcWHWM0_in8dFHqw8w1TstRu-JLzYdGZ1m2I7c10QJVWVjCp7oU6d6IqRJFZIDoq2US2FS9G8pCuNy8vdHAGbZNBOAiKcsAMH5FOcxaIBOO95BfNwLnepQFsSqawSJXFy5dtCWfTRk9JyAgjEX8F5_UGn14KKrXjrl-4cw9S3jt7uVbu9LU6K9vWpsmrjs',
-          initPhrase: 'запусти букволов',
-          getState: () => ({})
-        })
-      : window.assistant.createAssistant({ getState: () => ({}) });
-  
-    assistant.on('data', (message) => {
-    console.log('[assistant → front]', message);
-    if (message.type !== 'smart_app_data') return;
+    const assistant = location.hostname === 'localhost'
+        ? window.assistant.createSmartappDebugger({
+            token: '',
+            initPhrase: 'запусти букволов',
+            getState: () => ({}),
+            fakeBackend: true
+          })
+        : window.assistant.createAssistant({ getState: () => ({}) });
 
-    const { action, letter, word } = message.payload || {};
-    /* твоя текущая обработка */
-    if (action === 'insert_letter' && letter) handleKeyClick(letter);
-    if (action === 'insert_word'   && word)   [...word].forEach(handleKeyClick);
-  });
+    assistant.on('data', (command) => {
+  if (command.type !== 'smart_app_data') return;
 
-  // 2️⃣ если нужно посмотреть, что ты отправляешь в бэкенд:
-  function sendToBackend(action, payload = {}) {
-      console.log('[front → backend]', action, payload);
-      assistant.sendData({ action, ...payload });
-  }
+  const { action, letter, word } = command.payload || {};
+  if (action === 'insert_letter' && letter) handleKeyClick(letter);
+  if (action === 'insert_word'   && word)   [...word].forEach(handleKeyClick);
+});
+
   </script>
   <script>
     const WORDS = [
@@ -346,7 +333,6 @@
     }
 
     function handleKeyClick(letter) {
-      console.log('[Клик по клавише]', letter);
       if (isGameOver) return;
       if (currentCol < 5) {
         const cell = document.querySelector(`[data-row='${currentRow}'][data-col='${currentCol}']`);
