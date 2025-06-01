@@ -163,7 +163,6 @@
       background-color: #f2f2f2;
       transform: translateY(-2px);
     }
-
   </style>
 </head>
 <body>
@@ -225,25 +224,6 @@
   <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@sberdevices/assistant-client@4/umd/assistant.development.min.js">
-  </script>
-  <script>
-    const assistant = location.hostname === 'localhost'
-        ? window.assistant.createSmartappDebugger({
-            token: '',
-            initPhrase: 'запусти букволов',
-            getState: () => ({}),
-            fakeBackend: true
-          })
-        : window.assistant.createAssistant({ getState: () => ({}) });
-
-    assistant.on('data', (command) => {
-  if (command.type !== 'smart_app_data') return;
-
-  const { action, letter, word } = command.payload || {};
-  if (action === 'insert_letter' && letter) handleKeyClick(letter);
-  if (action === 'insert_word'   && word)   [...word].forEach(handleKeyClick);
-});
-
   </script>
   <script>
     const WORDS = [
@@ -340,7 +320,15 @@
         currentCol++;
       }
       if (currentCol === 5) {
-        checkGuess();
+          const guess = getCurrentGuess();
+          sendToBackend('try_word', { word: guess });
+      }
+      function getCurrentGuess(){
+        let g = "";
+        for (let c = 0; c < 5; c++) {
+          g += document.querySelector(`[data-row='${currentRow}'][data-col='${c}']`).textContent;
+        }
+        return g;
       }
     }
 
@@ -351,6 +339,26 @@
         const cell = document.querySelector(`[data-row='${currentRow}'][data-col='${currentCol}']`);
         cell.textContent = "";
       }
+    }
+    function clearCurrentRow() {
+      for (let col = 0; col < 5; col++) {
+        const cell = document.querySelector(
+          `[data-row='${currentRow}'][data-col='${col}']`
+        );
+        cell.textContent = '';
+      }
+      currentCol = 0;
+    }
+    function markRowInvalid() {
+      const row = document.querySelectorAll('.row')[currentRow];
+      row.classList.add('invalid');
+      setTimeout(() => row.classList.remove('invalid'), 450);
+      clearCurrentRow();
+    }
+    function fillWord(word) {
+      if (isGameOver) return;
+      clearCurrentRow();
+      [...word].forEach(handleKeyClick);
     }
 
     function checkGuess() {
@@ -441,6 +449,47 @@
       }
       return colors;
     }
+  </script>
+  <script>
+    const isLocal = 
+    location.hostname === 'localhost' ||
+    location.hostname === '127.0.0.1' || 
+    location.hostname === '' ||
+    location.protocol === 'file:';
+  
+    const assistant = isLocal
+      ? window.assistant.createSmartappDebugger({
+          token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJqdGkiOiIyYTVjNGJiMi1hOWE4LTQ3MDQtYjEyYi1jNThjMDdkNjk0YTciLCJzdWIiOiJlYTE5NDFkNWFiZTRiODcyYzIzZDhiYjg1NWM1ODlhNmRlNDAyNGEzYjM5NmE5MjIyYjUyOTdlZjI2MjZmNTdiNTM5YmU5MjcwMDQyNjI5OCIsImlzcyI6IktFWU1BU1RFUiIsImV4cCI6MTc0ODg1NzI2MSwiYXVkIjoiVlBTIiwidXNyIjoiMjJhMTFjZDEtMmQ4Ni00NzYzLTg5MGYtZTE1OWI3MGJlZDhmIiwiaWF0IjoxNzQ4NzcwODUxLCJzaWQiOiI5ZjE1NzVjMy00Mzg4LTQ1ZjEtODBlNi1mZGJlMzY1MjlhYTQifQ.skXhcUwm5saWwnwxlkre0IoJRwhfcP184oBrUSZtGt1dKrMGmQLjbM2kMZtAtMz41Jw3T_wmdUWPl0KrQfuto8-rvoE40y354IXD4G8x3KWbqIKXRiVbnqlfqyFCAcjausRfeE1W6MtfYV_Z5cWmHyOP6VCYc-cKnyiAOqS20wTUx9WzQ32ItO9-bHeEEATea9E9MBOnmG5MTtz5syfFyhrHjogzPZFWEBCb-BDDPOEp6eATmntiEvVIxirvjyY3HMXRRX-Kq_6776ucrzCyr9sQVYj3vMZ2C91SgExO-qX4YpE7ysOcPJyFdMLn36C0E5QIfPu51JG_mRGnoIaBw-OQDTZiz9XkQ9AtFFVhwXZ8qTPIg-SOPrD355ZrzYqkOdLOqwOuBLvmYaPe5dBuRXmf9C4s1VvGvpI8rLaaVVFJISMgXtIzdtb_RAqRetpbQHms__JbwpnpHTcdplozKUIeb3K5DCSEQ7pQFQw5WLT-u3GESQyQyK9tt51L2TFH8EkF9VRNpkzevptQ2brbVfJi-grUfr2sElAduQ5ks5jLazumIg85Ze9nuA-QnY_HbQrHxo7O7-rz7q7Rp1yQr4dAygLxixDCMIJttc2CGaS6V6cKhkBnwfZ4lc2UaqPEx6fd7tQPrVDyCUT2Gkc92MpDQZkSWMnWFl7CseMFUTg',
+          initPhrase: 'запусти букволов',
+          getState: () => ({})
+        })
+      : window.assistant.createAssistant({ getState: () => ({}) });
+  
+    assistant.on('data', (message) => {
+    console.log('[assistant → front]', message);
+    if (message.type !== 'smart_app_data') return;
+
+    const { type, letter, word } = message.action || {};
+    console.log(type);
+    console.log(letter);
+    console.log(word);
+    if (type === 'insert_letter' && letter) handleKeyClick(letter);
+    if (type === 'insert_word' && word) fillWord(word);
+    if (type === 'word_result') {
+      if (ok) {
+         checkGuess();
+      } else {
+         showModal("Такого слова нет в словаре.");
+         markRowInvalid();
+      }
+      return;
+    }
+  });
+
+  function sendToBackend(action, payload = {}) {
+      console.log('[front → backend]', action, payload);
+      assistant.sendData({ action, ...payload });
+  }
   </script>
 </body>
 </html>
