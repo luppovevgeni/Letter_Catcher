@@ -66,11 +66,3 @@ function addSuggestions(suggestions, context) {
 
     reply({ suggestions: { buttons: buttons } }, context.response);
 }
-
-function replyWordResult(isOk, context) {
-    addAction(
-        { type: "smart_app_data",
-          payload: { action: "word_result", ok: !!isOk } },
-        context
-    );
-}

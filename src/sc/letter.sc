@@ -21,4 +21,4 @@ theme: /
                 $reactions.answer("Не понял букву, попробуйте еще раз.");
             }
 
-            addSuggestions(["Слово дом", "Помощь"], $context);
+            addSuggestions(["Буква а", "Помощь"], $context);

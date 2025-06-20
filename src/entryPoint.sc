@@ -1,9 +1,7 @@
 require: slotfilling/slotFilling.sc
   module = sys.zb-common
 
-require: js/dictionary.js
 require: js/actions.js
-require: sc/checkWord.sc
 require: sc/letter.sc
 require: sc/word.sc
 
@@ -18,11 +16,11 @@ theme: /
 
     state: Start
         q!: $regex</start>
-        q!: (запусти|открой|вруби) [игру]
+        q!: (запусти|открой|вруби) (букволов|5 букв|вордл)
         a: Привет! Добро пожаловать в игру! Скажите "слово [ваше слово]" или "буква [ваша буква]".
 
         script:
-            addSuggestions(["Помощь", "Начать игру"], $context);
+            addSuggestions(["Помощь"], $context);
 
     state: Help
         q!: (помощь|что ты умеешь|как [тебя] использовать|помоги|команды)
@@ -42,4 +40,4 @@ theme: /
             } else {
                 $reactions.answer("Попробуйте сказать 'слово [ваше слово]' или 'буква [ваша буква]'.");
             }
-            addSuggestions(["Помощь", "Слово бетон", "Буква а"], $context);
+            addSuggestions(["Помощь", "Слово школа", "Буква а"], $context);
